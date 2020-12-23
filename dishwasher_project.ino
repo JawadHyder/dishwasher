@@ -16,8 +16,8 @@ EasyButton btn2(BTN_PIN_2);
 //int button1PrevState = BTN_RELEASED;
 //int button2PrevState = BTN_RELEASED;
 
-mode CURRENT_MODE = MODE_HOT;
-duration CURRENT_DURATION = DURATION_QUICK;
+dw_mode CURRENT_MODE = MODE_HOT;
+dw_duration CURRENT_DURATION = DURATION_QUICK;
 state CURRENT_STATE = STATE_WELCOME;
 
 LCD_Controller lcd; // Initialize LCD
@@ -28,11 +28,11 @@ void onBtn1Pressed() {
         case STATE_WELCOME:
             CURRENT_STATE = STATE_MOD_SELECT;
         case STATE_MOD_SELECT:
-            CURRENT_MODE = nextMode(CURRENT_MODE);
+            CURRENT_MODE = nextDwMode(CURRENT_MODE);
             lcd.showMode(CURRENT_MODE);
             break;
         case STATE_DURATION_SELECT:
-            CURRENT_DURATION = nextDuration(CURRENT_DURATION);
+            CURRENT_DURATION = nextDwDuration(CURRENT_DURATION);
             lcd.showDuration(CURRENT_DURATION);
             break;
         case STATE_FUNCTIONAL:
@@ -48,12 +48,23 @@ void onBtn1LongPressed() {
             lcd.showDuration(CURRENT_DURATION);
             break;
         case STATE_DURATION_SELECT:
+            CURRENT_STATE = STATE_CONFIRMATION;
+            lcd.showConfirmation(CURRENT_MODE, CURRENT_DURATION);
+            break;
+        case STATE_CONFIRMATION:
+            CURRENT_STATE = STATE_CONFIRMATION;
+            lcd.showFunctionalDetails();
             break;
     }
 }
 
 void onBtn2Pressed() {
     Serial.println("Button2 has been pressed!");
+    // Stop all functions
+    CURRENT_STATE = STATE_WELCOME;
+    CURRENT_MODE = MODE_HOT;
+    CURRENT_DURATION = DURATION_QUICK;
+    lcd.splash();
 }
 
 void setup() {
@@ -65,7 +76,7 @@ void setup() {
 
     btn1.begin();
     btn1.onPressed(onBtn1Pressed);
-    btn1.onPressedFor(2000, onBtn1LongPressed);
+    btn1.onPressedFor(1000, onBtn1LongPressed);
     btn2.begin();
     btn2.onPressed(onBtn2Pressed);
 
