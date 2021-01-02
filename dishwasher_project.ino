@@ -3,6 +3,7 @@
 
 #include "Lcd.h"
 #include "enums.h"
+//#include "Buzzer.h"
 
 //const BTN_PRESSED = 0; // inverse because of pullup input
 //const BTN_RELEASED = 1; // inverse because of pullup input
@@ -13,6 +14,7 @@ EasyButton btn1(BTN_PIN_1);
 EasyButton btn2(BTN_PIN_2);
 
 const int BUZZER_PIN = 12; // GPIO 12 (D6)
+//Buzzer_Controller buzzer;
 
 //int button1PrevState = BTN_RELEASED;
 //int button2PrevState = BTN_RELEASED;
@@ -39,7 +41,7 @@ void onBtn1Pressed() {
         case STATE_FUNCTIONAL:
             break;
     }
-    beep();
+//    buzzer.singleBeep(100);
 }
 
 void onBtn1LongPressed() {
@@ -67,13 +69,10 @@ void onBtn2Pressed() {
     CURRENT_MODE = MODE_HOT;
     CURRENT_DURATION = DURATION_QUICK;
     lcd.splash();
-    beep();
+//    buzzer.singleBeep(100);
 }
 
 void setup() {
-    pinMode(BUZZER_PIN, OUTPUT);
-    digitalWrite(BUZZER_PIN, LOW);
-
     Serial.begin(9600);
     while (! Serial) delay(100);
     Serial.println(F("Initializing dishwasher program..."));
@@ -86,34 +85,20 @@ void setup() {
     btn2.begin();
     btn2.onPressed(onBtn2Pressed);
 
+//    buzzer.init(BUZZER_PIN);
+
     Serial.println(F("... Setup completed"));
+//    buzzer.multipleBeep(100, 5);
 }
 
 void loop() {
     btn1.read();
     btn2.read();
-    updateBeep();
+//    buzzer.update();
 
     if (CURRENT_STATE == STATE_FUNCTIONAL) { // If dishwasher is running
 
     }
 
-}
-
-bool beeping = false;
-unsigned long beepingStartAt = 0;
-void beep() {
-    Serial.println(F("Starting beep"));
-    beeping = true;
-    beepingStartAt = millis();
-    digitalWrite(BUZZER_PIN, HIGH);
-}
-void updateBeep() {
-    if (beeping && ((millis() - beepingStartAt) > 100)) {
-        Serial.println(F("Stopping beep"));
-        beeping = false;
-        beepingStartAt = 0;
-        digitalWrite(BUZZER_PIN, LOW);
-    }
 }
 
