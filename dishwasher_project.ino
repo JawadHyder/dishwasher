@@ -7,11 +7,12 @@
 //const BTN_PRESSED = 0; // inverse because of pullup input
 //const BTN_RELEASED = 1; // inverse because of pullup input
 
-const int BTN_PIN_1 = 14; // Start/Fwd button. GPIO 14 (D5)
-const int BTN_PIN_2 = 12; // Stop/Back button. GPIO 12 (D6)
-
+const int BTN_PIN_1 = 1; // Start/Fwd button. GPIO 1 (TX)
+const int BTN_PIN_2 = 2; // Stop/Back button. GPIO 2 (D4)
 EasyButton btn1(BTN_PIN_1);
 EasyButton btn2(BTN_PIN_2);
+
+const int BUZZER_PIN = 12; // GPIO 12 (D6)
 
 //int button1PrevState = BTN_RELEASED;
 //int button2PrevState = BTN_RELEASED;
@@ -38,6 +39,7 @@ void onBtn1Pressed() {
         case STATE_FUNCTIONAL:
             break;
     }
+    beep();
 }
 
 void onBtn1LongPressed() {
@@ -65,9 +67,13 @@ void onBtn2Pressed() {
     CURRENT_MODE = MODE_HOT;
     CURRENT_DURATION = DURATION_QUICK;
     lcd.splash();
+    beep();
 }
 
 void setup() {
+    pinMode(BUZZER_PIN, OUTPUT);
+    digitalWrite(BUZZER_PIN, LOW);
+
     Serial.begin(9600);
     while (! Serial) delay(100);
     Serial.println(F("Initializing dishwasher program..."));
@@ -86,10 +92,28 @@ void setup() {
 void loop() {
     btn1.read();
     btn2.read();
+    updateBeep();
+
+    if (CURRENT_STATE == STATE_FUNCTIONAL) { // If dishwasher is running
+
+    }
 
 }
 
-
-void loopSpeedControl() {
-    delay(100);
+bool beeping = false;
+unsigned long beepingStartAt = 0;
+void beep() {
+    Serial.println(F("Starting beep"));
+    beeping = true;
+    beepingStartAt = millis();
+    digitalWrite(BUZZER_PIN, HIGH);
 }
+void updateBeep() {
+    if (beeping && ((millis() - beepingStartAt) > 100)) {
+        Serial.println(F("Stopping beep"));
+        beeping = false;
+        beepingStartAt = 0;
+        digitalWrite(BUZZER_PIN, LOW);
+    }
+}
+
