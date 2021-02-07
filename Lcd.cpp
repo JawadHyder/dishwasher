@@ -25,7 +25,7 @@ void LCD_Controller::init() {
     delay(100);
     clearBlack();
     display.display();
-    Serial.println(F("... Initialized LCD"));
+    Serial.println(F("Initialized LCD"));
     delay(100);
 }
 void LCD_Controller::splash() {
@@ -39,7 +39,7 @@ void LCD_Controller::splash() {
     display.setCursor(10,30);
     display.println("Ready...");
     display.display();
-    Serial.println(F("... Drew splash"));
+    Serial.println(F("Drew splash"));
 }
 void LCD_Controller::showMode(dw_mode m) {
     clearBlack();

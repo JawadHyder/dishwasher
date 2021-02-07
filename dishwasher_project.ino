@@ -1,29 +1,35 @@
 #include <Arduino.h>
 #include <EasyButton.h>
+#include <Ticker.h>
 
 #include "Lcd.h"
 #include "enums.h"
-//#include "Buzzer.h"
+#include "Buzzer.h"
+#include "Relay.h"
 
-//const BTN_PRESSED = 0; // inverse because of pullup input
-//const BTN_RELEASED = 1; // inverse because of pullup input
-
-const int BTN_PIN_1 = 1; // Start/Fwd button. GPIO 1 (TX)
+const int BTN_PIN_1 = 3; // Start/Fwd button. GPIO 3 (RX)
 const int BTN_PIN_2 = 2; // Stop/Back button. GPIO 2 (D4)
 EasyButton btn1(BTN_PIN_1);
 EasyButton btn2(BTN_PIN_2);
 
 const int BUZZER_PIN = 12; // GPIO 12 (D6)
-//Buzzer_Controller buzzer;
+Buzzer_Controller buzzer;
 
-//int button1PrevState = BTN_RELEASED;
-//int button2PrevState = BTN_RELEASED;
+const int SPRAY_MOTOR_PIN = 14; // GPIO 14 (D5)
+Relay_Controller sprayMotor;
+const int DRAIN_MOTOR_PIN = 13; // GPIO 13 (D7)
+Relay_Controller drainMotor;
+const int HEATER_PIN = 15; // GPIO 15 (D6)
+Relay_Controller heater;
 
 dw_mode CURRENT_MODE = MODE_HOT;
 dw_duration CURRENT_DURATION = DURATION_QUICK;
 state CURRENT_STATE = STATE_WELCOME;
 
 LCD_Controller lcd; // Initialize LCD
+
+// Ticks every second when program is in functional state
+Ticker operationTicker;
 
 void onBtn1Pressed() {
     Serial.println("Button1 has been pressed!");
@@ -41,7 +47,7 @@ void onBtn1Pressed() {
         case STATE_FUNCTIONAL:
             break;
     }
-//    buzzer.singleBeep(100);
+    buzzer.beep(50);
 }
 
 void onBtn1LongPressed() {
@@ -56,10 +62,12 @@ void onBtn1LongPressed() {
             lcd.showConfirmation(CURRENT_MODE, CURRENT_DURATION);
             break;
         case STATE_CONFIRMATION:
-            CURRENT_STATE = STATE_CONFIRMATION;
+            CURRENT_STATE = STATE_FUNCTIONAL;
             lcd.showFunctionalDetails();
+            operationTicker.attach(1, )
             break;
     }
+    buzzer.beep(200);
 }
 
 void onBtn2Pressed() {
@@ -69,7 +77,8 @@ void onBtn2Pressed() {
     CURRENT_MODE = MODE_HOT;
     CURRENT_DURATION = DURATION_QUICK;
     lcd.splash();
-//    buzzer.singleBeep(100);
+    sprayMotor.turnOff();
+    buzzer.beep(50);
 }
 
 void setup() {
@@ -85,20 +94,29 @@ void setup() {
     btn2.begin();
     btn2.onPressed(onBtn2Pressed);
 
-//    buzzer.init(BUZZER_PIN);
+    buzzer.init(BUZZER_PIN);
+
+    sprayMotor.init(SPRAY_MOTOR_PIN);
+//    drainMotor.init(DRAIN_MOTOR_PIN);
+//    heater.init(HEATER_PIN);
 
     Serial.println(F("... Setup completed"));
-//    buzzer.multipleBeep(100, 5);
+    buzzer.multipleBeep(100, 5);
+
+    blinker.attach(0.5, changeState);
+}
+
+void operationTick()
+{
+    sprayMotor.invert();
 }
 
 void loop() {
     btn1.read();
     btn2.read();
-//    buzzer.update();
-
+    buzzer.update();
     if (CURRENT_STATE == STATE_FUNCTIONAL) { // If dishwasher is running
-
+        sprayMotor.turnOn();
     }
-
 }
 

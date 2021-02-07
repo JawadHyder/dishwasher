@@ -8,9 +8,9 @@ class Buzzer_Controller {
 public:
     Buzzer_Controller();
     void init(int pinNum);
-    void singleBeep(unsigned long ms);
+    void beep(unsigned long ms);
     void multipleBeep(unsigned long ms, int times);
     void update();
 private:
-
+    unsigned long timeSpent();
 };
