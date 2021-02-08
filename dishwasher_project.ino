@@ -15,21 +15,30 @@ EasyButton btn2(BTN_PIN_2);
 const int BUZZER_PIN = 12; // GPIO 12 (D6)
 Buzzer_Controller buzzer;
 
-const int SPRAY_MOTOR_PIN = 14; // GPIO 14 (D5)
+const uint8_t SPRAY_MOTOR_PIN = 14; // GPIO 14 (D5)
 Relay_Controller sprayMotor;
-const int DRAIN_MOTOR_PIN = 13; // GPIO 13 (D7)
+const uint8_t DRAIN_MOTOR_PIN = 13; // GPIO 13 (D7)
 Relay_Controller drainMotor;
-const int HEATER_PIN = 15; // GPIO 15 (D6)
+const uint8_t HEATER_PIN = 0; // GPIO 15 (D6)
 Relay_Controller heater;
 
-dw_mode CURRENT_MODE = MODE_HOT;
-dw_duration CURRENT_DURATION = DURATION_QUICK;
-state CURRENT_STATE = STATE_WELCOME;
+dw_mode CURRENT_MODE;
+dw_duration CURRENT_DURATION;
+dw_state CURRENT_STATE;
+dw_cycle CURRENT_CYCLE;
 
 LCD_Controller lcd; // Initialize LCD
 
 // Ticks every second when program is in functional state
 Ticker operationTicker;
+Ticker resetTicker;
+
+void initializeVars() {
+    CURRENT_MODE = MODE_HOT;
+    CURRENT_DURATION = DURATION_QUICK;
+    CURRENT_STATE = STATE_WELCOME;
+    CURRENT_CYCLE = CYCLE_1;
+}
 
 void onBtn1Pressed() {
     Serial.println("Button1 has been pressed!");
@@ -64,7 +73,7 @@ void onBtn1LongPressed() {
         case STATE_CONFIRMATION:
             CURRENT_STATE = STATE_FUNCTIONAL;
             lcd.showFunctionalDetails();
-            operationTicker.attach(1, )
+            operationTicker.attach(1, operationTick);
             break;
     }
     buzzer.beep(200);
@@ -73,11 +82,10 @@ void onBtn1LongPressed() {
 void onBtn2Pressed() {
     Serial.println("Button2 has been pressed!");
     // Stop all functions
-    CURRENT_STATE = STATE_WELCOME;
-    CURRENT_MODE = MODE_HOT;
-    CURRENT_DURATION = DURATION_QUICK;
+    initializeVars();
     lcd.splash();
-    sprayMotor.turnOff();
+    operationTicker.detach();
+    resetTicker.attach(1, resetTick);
     buzzer.beep(50);
 }
 
@@ -85,6 +93,7 @@ void setup() {
     Serial.begin(9600);
     while (! Serial) delay(100);
     Serial.println(F("Initializing dishwasher program..."));
+    initializeVars();
     lcd.init();
     lcd.splash();
 
@@ -97,26 +106,38 @@ void setup() {
     buzzer.init(BUZZER_PIN);
 
     sprayMotor.init(SPRAY_MOTOR_PIN);
-//    drainMotor.init(DRAIN_MOTOR_PIN);
-//    heater.init(HEATER_PIN);
+    drainMotor.init(DRAIN_MOTOR_PIN);
+    heater.init(HEATER_PIN);
 
     Serial.println(F("... Setup completed"));
     buzzer.multipleBeep(100, 5);
-
-    blinker.attach(0.5, changeState);
 }
 
-void operationTick()
-{
+void operationTick() {
     sprayMotor.invert();
+    drainMotor.invert();
+    heater.invert();
+
+
+
+
+
+
+
+
+}
+
+void resetTick() {
+    sprayMotor.turnOff();
+    drainMotor.turnOff();
+    heater.turnOff();
+
+    resetTicker.detach();
 }
 
 void loop() {
     btn1.read();
     btn2.read();
     buzzer.update();
-    if (CURRENT_STATE == STATE_FUNCTIONAL) { // If dishwasher is running
-        sprayMotor.turnOn();
-    }
 }
 

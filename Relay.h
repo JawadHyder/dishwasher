@@ -6,10 +6,10 @@
 class Relay_Controller {
 public:
     Relay_Controller();
-    void init(int pinNum);
+    void init(uint8_t pinNum);
     void turnOn();
     void turnOff();
     void invert();
 private:
-
+	uint8_t Relay_Controller_PIN_NUM;
 };

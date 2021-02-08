@@ -4,11 +4,9 @@
 #include <Arduino.h>
 #include "Relay.h"
 
-unsigned long Relay_Controller_PIN_NUM;
-
 Relay_Controller::Relay_Controller() {}
 
-void Relay_Controller::init(int pinNum) {
+void Relay_Controller::init(uint8_t pinNum) {
     Relay_Controller_PIN_NUM = pinNum;
     pinMode(Relay_Controller_PIN_NUM, OUTPUT);
     digitalWrite(Relay_Controller_PIN_NUM, HIGH);
@@ -23,5 +21,6 @@ void Relay_Controller::turnOff(){
 }
 void Relay_Controller::invert(){
     Serial.println(F("Inverting relay..."));
+    Serial.println(Relay_Controller_PIN_NUM);
     digitalWrite(Relay_Controller_PIN_NUM, !digitalRead(Relay_Controller_PIN_NUM));
 }

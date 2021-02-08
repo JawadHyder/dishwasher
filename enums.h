@@ -19,12 +19,17 @@ enum dw_duration {
 static dw_duration nextDwDuration(dw_duration d) {
     return static_cast<dw_duration>((d + 1) % 3);
 }
-enum state {
+enum dw_state {
     STATE_WELCOME,
     STATE_MOD_SELECT,
     STATE_DURATION_SELECT,
     STATE_CONFIRMATION,
     STATE_FUNCTIONAL
+};
+enum dw_cycle {
+    CYCLE_1,
+    CYCLE_2,
+    CYCLE_3
 };
 
 #endif
