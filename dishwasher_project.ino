@@ -22,6 +22,9 @@ Relay_Controller drainMotor;
 const uint8_t HEATER_PIN = 0; // GPIO 15 (D6)
 Relay_Controller heater;
 
+const uint8_t LOW_WATER_LEVEL_PIN = 9; // GPIO 15 (D6)
+
+
 dw_mode CURRENT_MODE;
 dw_duration CURRENT_DURATION;
 dw_state CURRENT_STATE;
@@ -109,6 +112,8 @@ void setup() {
     drainMotor.init(DRAIN_MOTOR_PIN);
     heater.init(HEATER_PIN);
 
+    pinMode(LOW_WATER_LEVEL_PIN, INPUT_PULLUP);
+
     Serial.println(F("... Setup completed"));
     buzzer.multipleBeep(100, 5);
 }
@@ -118,12 +123,11 @@ void operationTick() {
     drainMotor.invert();
     heater.invert();
 
-
-
-
-
-
-
+    if (digitalRead(LOW_WATER_LEVEL_PIN)) {
+        Serial.println(F("LOW_WATER_LEVEL_PIN true"));
+    } else {
+        Serial.println(F("LOW_WATER_LEVEL_PIN false"));
+    }
 
 }
 
