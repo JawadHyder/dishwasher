@@ -109,7 +109,7 @@ void LCD_Controller::showConfirmation(dw_mode m, dw_duration d) {
     }
     display.setCursor(5,50);
     display.setTextSize(1);
-    display.println("Long press...");
+    display.println("Double click...");
     display.display();
 }
 void LCD_Controller::showFunctionalDetails() {

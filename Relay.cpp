@@ -12,15 +12,14 @@ void Relay_Controller::init(uint8_t pinNum) {
     digitalWrite(Relay_Controller_PIN_NUM, HIGH);
 }
 void Relay_Controller::turnOn(){
-    Serial.println(F("Turning on relay..."));
+    // Serial.println(F("Turning on relay..."));
     digitalWrite(Relay_Controller_PIN_NUM, LOW);
 }
 void Relay_Controller::turnOff(){
-    Serial.println(F("Turning off relay..."));
+    // Serial.println(F("Turning off relay..."));
     digitalWrite(Relay_Controller_PIN_NUM, HIGH);
 }
 void Relay_Controller::invert(){
-    Serial.println(F("Inverting relay..."));
-    Serial.println(Relay_Controller_PIN_NUM);
+    // Serial.println(F("Inverting relay..."));
     digitalWrite(Relay_Controller_PIN_NUM, !digitalRead(Relay_Controller_PIN_NUM));
 }
