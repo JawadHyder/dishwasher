@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <AceButton.h>
 #include <Ticker.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 #include "Lcd.h"
 #include "enums.h"
@@ -9,24 +11,27 @@
 
 using namespace ace_button;
 
-int ONE_SECOND_DURATION = 100; // 1 second in ms. Reduce value to speed up program.
+int ONE_SECOND_DURATION = 1000; // 1 second in ms. Reduce value to speed up program.
 
 const int BTN_PIN_1 = 2; // Start/Fwd button.
-AceButton btn1(BTN_PIN_1);
+AceButton btn1( BTN_PIN_1);
 
 const uint8_t SPRAY_MOTOR_PIN = 0; // GPIO 0 (D3)
-const uint8_t DRAIN_MOTOR_PIN = 14; // GPIO 14 (D5)
+const uint8_t DRAIN_MOTOR_PIN = 16; // GPIO 14 (D5)
 const uint8_t WATER_VALVE_PIN = 13; // GPIO 13 (D7)
+const uint8_t HEATER_PIN = 15; // GPIO 15 
 Relay_Controller sprayMotor;
 Relay_Controller drainMotor;
 Relay_Controller waterValve;
-// const uint8_t HEATER_PIN = 0; // GPIO 15 (D6)
-// Relay_Controller heater;
+Relay_Controller heater;
 
 
-
+const uint8_t TEMPERATURE_SENSOR_PIN = 14; // GPIO 16 (D0)
 const uint8_t LOW_WATER_LEVEL_PIN = 3; // low water level
 const uint8_t HIGH_WATER_LEVEL_PIN = 12; // GPIO 12 (D6)
+
+OneWire oneWire(TEMPERATURE_SENSOR_PIN);
+DallasTemperature sensors(&oneWire);
 
 
 dw_mode CURRENT_MODE;
@@ -141,11 +146,14 @@ void setup() {
 
     sprayMotor.init(SPRAY_MOTOR_PIN);
     drainMotor.init(DRAIN_MOTOR_PIN);
-    // heater.init(HEATER_PIN);
+    heater.init(HEATER_PIN);
     waterValve.init(WATER_VALVE_PIN);
 
     pinMode(LOW_WATER_LEVEL_PIN, INPUT_PULLUP);
-    pinMode(HIGH_WATER_LEVEL_PIN, INPUT_PULLUP);
+    // pinMode(HIGH_WATER_LEVEL_PIN, INPUT_PULLUP);
+
+    sensors.setWaitForConversion(false);
+    sensors.begin();
 
     Serial.println(F("... Setup completed"));
     // buzzer.multipleBeep(100, 5);
@@ -175,26 +183,46 @@ bool nextCycle() {
 void operationTickTest() {
     static int count_relay = 0;
     count_relay++;
+
+    sensors.requestTemperatures();
+    while(!sensors.isConversionComplete()) {
+        // Just waiting for sensor to complete conversion
+    }
+    float temperatureC = sensors.getTempCByIndex(0);
+    Serial.print(temperatureC);
+    Serial.println("ºC");
+
     if (count_relay == 1)
     {
         sprayMotor.turnOn();
         drainMotor.turnOff();
         waterValve.turnOff();
+        heater.turnOff();
     } else if (count_relay == 2)
     {
         sprayMotor.turnOff();
         drainMotor.turnOn();
         waterValve.turnOff();
+        heater.turnOff();
     }else if (count_relay == 3)
     {
         sprayMotor.turnOff();
         drainMotor.turnOff();
         waterValve.turnOn();
+        heater.turnOff();
+    }
+    else if (count_relay == 4)
+    {
+        sprayMotor.turnOff();
+        drainMotor.turnOff();
+        waterValve.turnOff();
+        heater.turnOn();
     }
     else {
         sprayMotor.turnOff();
         drainMotor.turnOff();
         waterValve.turnOff();
+        heater.turnOff();
         count_relay = 0;
     }
     Serial.println(F("Test tick..."));
@@ -203,7 +231,7 @@ void operationTickTest() {
 void operationTick() {
 
     bool waterLow = digitalRead(LOW_WATER_LEVEL_PIN);
-    bool waterHigh = digitalRead(HIGH_WATER_LEVEL_PIN);
+    bool waterHigh = false;//digitalRead(HIGH_WATER_LEVEL_PIN);
 
     if (drining) {
         Serial.println(F("Draining..."));
@@ -248,13 +276,20 @@ void resetTick() {
     sprayMotor.turnOff();
     drainMotor.turnOff();
     waterValve.turnOff();
-    // heater.turnOff();
+    heater.turnOff();
 
     resetTicker.detach();
 }
 
 void loop() {
     btn1.check();
+
+    // sensors.requestTemperatures();
+    // float temperatureC = sensors.getTempCByIndex(0);
+    // Serial.print(temperatureC);
+    // Serial.println("ºC");
+
+    // delay(1000);
     // btn2.read();
     // buzzer.update();
 }
