@@ -14,13 +14,15 @@ Buzzer_Controller::Buzzer_Controller() {}
 
 void Buzzer_Controller::init(int pinNum) {
     Buzzer_Controller_PIN_NUM = pinNum;
-    pinMode(Buzzer_Controller_PIN_NUM, OUTPUT);
+    // pinMode(Buzzer_Controller_PIN_NUM, OUTPUT);
     digitalWrite(Buzzer_Controller_PIN_NUM, LOW);
 }
 void Buzzer_Controller::beep(unsigned long ms) {
     Buzzer_Controller_timerStartMs = millis();
     Buzzer_Controller_beepDurationMs = ms;
     Buzzer_Controller_beep_status = true;
+    pinMode(Buzzer_Controller_PIN_NUM, FUNCTION_3); // Hack to use TX as output. FUNCTION_3 will convert tx to GPIO pin
+    pinMode(Buzzer_Controller_PIN_NUM, OUTPUT);
     digitalWrite(Buzzer_Controller_PIN_NUM, HIGH);
     Buzzer_Controller_beepCount = max(Buzzer_Controller_beepCount - 1, 0);
 }
@@ -52,6 +54,7 @@ void Buzzer_Controller::update() {
         Buzzer_Controller_beepDurationMs = 0;
         Buzzer_Controller_beep_status = false;
         digitalWrite(Buzzer_Controller_PIN_NUM, LOW);
+        pinMode(Buzzer_Controller_PIN_NUM, FUNCTION_0); // Hack to use TX as output. FUNCTION_0 will convert tx from GPIO back to TX pin
     }
 //    else if (Buzzer_Controller_beepCount > 0) {
 //        Serial.println(F("update: Buzzer_Controller_beepCount is not 0"));
